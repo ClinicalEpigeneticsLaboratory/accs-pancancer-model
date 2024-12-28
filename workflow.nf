@@ -8,6 +8,13 @@ params.scaler = "artifacts/scaler"
 params.manifest = "artifacts/manifest.parquet"
 params.anomaly_detector = "artifacts/anomaly_detector"
 
+log.info """\
+==============
+Input:
+==============
+Working directory [--working_dir <path>]: ${params.working_dir}
+""".stripIndent()
+
 process parseRawData {
     publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'mynorm.parquet'
     publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
