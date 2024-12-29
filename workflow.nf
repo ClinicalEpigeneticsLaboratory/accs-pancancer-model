@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-params.working_dir = ""
+params.input = ""
 
 params.model = "artifacts/model"
 params.imputer = "artifacts/imputer"
@@ -12,15 +12,15 @@ log.info """\
 ==============
 Input:
 ==============
-Working directory [--working_dir <path>]: ${params.working_dir}
+Input directory [--input <path>]: ${params.input}
 """.stripIndent()
 
 process parseRawData {
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'mynorm.parquet'
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'mynorm.parquet'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
 
     input:
-    path working_dir
+    path input
 
     output:
     path 'mynorm.parquet', emit: 'mynorm'
@@ -28,12 +28,12 @@ process parseRawData {
 
     script:
     """
-    preprocess.R $working_dir
+    preprocess.R $winput
     """
 }
 
 process normalizeData {
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'normalized.parquet'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'normalized.parquet'
 
     input:
     path mynorm
@@ -49,7 +49,7 @@ process normalizeData {
 }
 
 process imputeData {
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'imputed.parquet'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'imputed.parquet'
 
     input:
     path normalized_mynorm
@@ -83,7 +83,7 @@ process imputeData {
 }
 
 process predictData {
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
 
     input:
     path mynorm
@@ -121,7 +121,7 @@ process predictData {
 }
 
 process anomalyDetection {
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
 
     input:
     path mynorm
@@ -167,7 +167,7 @@ process anomalyDetection {
 }
 
 process generatePP {
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'pp.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'pp.json'
 
     input:
     path predicted
@@ -218,7 +218,7 @@ process generatePP {
 }
 
 process generateAP {
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'ap.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'ap.json'
 
     input:
     path predicted
@@ -262,19 +262,19 @@ process generateAP {
 
 process cnvsEstimation {
     input:
-    path working_dir
+    path input
 
     output:
     path 'cnvs.json'
 
     script:
     """
-    CNVs.R $working_dir
+    CNVs.R $winput
     """
 }
 
 process updateCNVsPlot {
-    publishDir "$params.working_dir/results", mode: 'copy', overwrite: true, pattern: 'cnvs.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'cnvs.json'
 
     input:
     path cnvs_plot
@@ -298,7 +298,7 @@ process updateCNVsPlot {
 }
 
 workflow {
-    wd = file( params.working_dir )
+    wd = file( params.input )
     model = file( params.model )
     scaler = file( params.scaler )
     imputer = file( params.imputer )
