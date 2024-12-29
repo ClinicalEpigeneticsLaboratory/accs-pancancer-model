@@ -105,12 +105,13 @@ process predictData {
     model = joblib.load("${model}")
 
     prediction = model.predict(data)[0]
+    confidence = max(proba)
     classes = model.classes_.tolist()
     proba = model.predict_proba(data).flatten().tolist()
 
-    if prediction >= 0.8:
+    if confidence >= 0.8:
         confidence_status = "High"
-    elif 0.65 < prediction < 0.8:
+    elif 0.65 < confidence < 0.8:
         confidence_status = "Medium"
     else:
         confidence_status = "Low"
@@ -120,7 +121,7 @@ process predictData {
 
     with open('predicted.json', 'w') as f:
         result["Prediction"] = prediction
-        result["Confidence"] = round(max(proba), 2)
+        result["Confidence"] = round(confidence, 2)
         result["Confidence_status"] = confidence_status
         result["Probabilities"] = proba
         result["Classes"] = classes
