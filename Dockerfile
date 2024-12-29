@@ -32,9 +32,9 @@ RUN Rscript requirements.R
 RUN Rscript sesame_cache.R
 
 # Download ref data for conumee
-WORKDIR /ref_data/
+WORKDIR /workdir/
 RUN wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE112nnn/GSE112618/suppl/GSE112618_RAW.tar
 RUN tar -xf GSE112618_RAW.tar
 
-# Run inference script
+# ENTRYPOINT
 CMD ["sh"]
