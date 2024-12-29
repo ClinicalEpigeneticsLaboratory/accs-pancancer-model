@@ -113,6 +113,7 @@ process predictData {
 
     with open('predicted.json', 'w') as f:
         result["Prediction"] = prediction
+        result["Confidence"] = max(proba)
         result["Probabilities"] = proba
         result["Classes"] = classes
 
@@ -158,10 +159,11 @@ process anomalyDetection {
         result = json.load(f)
 
     with open('predicted.json', 'w') as f:
+        results["Anomaly_status"] = status
         result["Anomaly_score"] = anomaly_score
         result["Anomaly_thresholds"] = {"Medium-risk sample": 1.5, "High-risk sample": threshold}
+        
         json.dump(result, f)
-
     """
 
 }
