@@ -28,7 +28,7 @@ process parseRawData {
 
     script:
     """
-    preprocess.R $winput
+    preprocess.R $input
     """
 }
 
@@ -269,7 +269,7 @@ process cnvsEstimation {
 
     script:
     """
-    CNVs.R $winput
+    CNVs.R $input
     """
 }
 
