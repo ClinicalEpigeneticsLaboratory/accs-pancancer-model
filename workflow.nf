@@ -108,12 +108,20 @@ process predictData {
     classes = model.classes_.tolist()
     proba = model.predict_proba(data).flatten().tolist()
 
+    if prediction >= 0.8:
+        confidence_status = "High"
+    elif 0.65 < prediction < 0.8:
+        confidence_status = "Medium"
+    else:
+        confidence_status = "Low"
+
     with open('${predictions}', 'r') as f:
         result = json.load(f)
 
     with open('predicted.json', 'w') as f:
         result["Prediction"] = prediction
-        result["Confidence"] = max(proba)
+        result["Confidence"] = round(max(proba), 2)
+        result["Confidence_status"] = confidence_status
         result["Probabilities"] = proba
         result["Classes"] = classes
 
