@@ -105,9 +105,10 @@ process predictData {
     model = joblib.load("${model}")
 
     prediction = model.predict(data)[0]
+    proba = model.predict_proba(data).flatten().tolist()
+
     confidence = max(proba)
     classes = model.classes_.tolist()
-    proba = model.predict_proba(data).flatten().tolist()
 
     if confidence >= 0.8:
         confidence_status = "High"
