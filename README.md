@@ -27,7 +27,7 @@ docker {
 }
 
 process {
-  container = "accs-model-v1"
+  container = "janbinkowski96/accs-model-v1"
 }
 ```
 
