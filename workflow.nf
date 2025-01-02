@@ -123,9 +123,10 @@ process plotNaNfreq {
         nan_freq = result["NaN_frequency"]
 
     df = pd.DataFrame.from_records(nan_freq, index=["NaN frequency"]).T.reset_index()
+    df.columns = ["Missing data", "Frequency"]
 
-    fig = px.pie(df, names="index", values="NaN frequency")
-    fig.update_layout(height=500, width=500, legend={"title": "Missing data"})
+    fig = px.pie(df, names="Missing data", values="Frequency", title="Missing data")
+    fig.update_layout(height=500, legend={"title": "Missing data"})
     write_json(fig, "nanf.json")
     """
 }
