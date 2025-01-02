@@ -36,5 +36,5 @@ WORKDIR /workdir/
 RUN wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE112nnn/GSE112618/suppl/GSE112618_RAW.tar
 RUN tar -xf GSE112618_RAW.tar
 
-# ENTRYPOINT
-CMD ["sh"]
+# Start
+CMD ["/bin/sh"]

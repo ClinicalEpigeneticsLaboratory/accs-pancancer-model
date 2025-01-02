@@ -17,14 +17,14 @@ Input directory [--input <path>]: ${params.input}
 
 process parseRawData {
     publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'mynorm.parquet'
-    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'results.json'
 
     input:
     path input
 
     output:
     path 'mynorm.parquet', emit: 'mynorm'
-    path 'predicted.json', emit: 'predictions'
+    path 'results.json', emit: 'results'
 
     script:
     """
@@ -50,14 +50,17 @@ process normalizeData {
 
 process imputeData {
     publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'imputed.parquet'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'results.json'
 
     input:
     path normalized_mynorm
     path scaler
     path imputer
+    path results
 
     output:
     path 'imputed.parquet'
+    path 'results.json'
 
     script:
     """
@@ -67,14 +70,25 @@ process imputeData {
     import joblib
 
     data = pd.read_parquet("${normalized_mynorm}")
+    if "CpG" in data.columns:
+        data = data.set_index("CpG")
+
     scaler = joblib.load("${scaler}")
     imputer = joblib.load("${imputer}")
+    data = data.loc[scaler.feature_names_in_]
 
-    if not data.isna().any().any():
+    with open('${results}', 'r') as f:
+        result = json.load(f)
+
+    with open('results.json', 'w') as f:
+        result["NaN_frequency"] = data.isna().value_counts(normalize=True).to_dict()
+        json.dump(result, f)
+
+    if not data.isna().any().squeeze():
         data.to_parquet('imputed.parquet')
 
     else:
-        data = data.loc[scaler.feature_names_in_].T
+        data = data.T
         data_scaled = scaler.transform(data)
         imputed_data = imputer.transform(data_scaled)
         data_imputed = scaler.inverse_transform(imputed_data)
@@ -82,16 +96,45 @@ process imputeData {
     """
 }
 
+process plotNaNfreq {
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'nanf.json'
+
+    input:
+    path results
+
+    output:
+    path "nanf.json"
+
+    script:
+    """
+    #!/usr/local/bin/python3.10
+
+    import json
+    import plotly.express as px
+    from plotly.io import write_json
+
+    with open('${results}', 'r') as f:
+        result = json.load(f)
+        nan_freq = results["NaN_frequency"]
+
+    df = pd.DataFrame.from_records(nan_freq, index=["NaN frequency"]).T.reset_index()
+
+    fig = px.pie(df, names="index", values="NaN frequency")
+    fig.update_layout(height=500, width=500, legend={"title": "Missing data"})
+    write_json(fig, "nanf.json")
+    """
+}
+
 process predictData {
-    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'results.json'
 
     input:
     path mynorm
     path model
-    path predictions
+    path results
 
     output:
-    path 'predicted.json'
+    path 'results.json'
 
     script:
     """
@@ -117,10 +160,10 @@ process predictData {
     else:
         confidence_status = "Low"
 
-    with open('${predictions}', 'r') as f:
+    with open('${results}', 'r') as f:
         result = json.load(f)
 
-    with open('predicted.json', 'w') as f:
+    with open('results.json', 'w') as f:
         result["Prediction"] = prediction
         result["Confidence"] = round(confidence, 2)
         result["Confidence_status"] = confidence_status
@@ -132,15 +175,15 @@ process predictData {
 }
 
 process anomalyDetection {
-    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'predicted.json'
+    publishDir "$params.input/results", mode: 'copy', overwrite: true, pattern: 'results.json'
 
     input:
     path mynorm
     path detector
-    path predictions
+    path results
 
     output:
-    path 'predicted.json'
+    path 'results.json'
 
     script:
     """
@@ -165,10 +208,10 @@ process anomalyDetection {
     else:
         status = "Low-risk sample"
 
-    with open('${predictions}', 'r') as f:
+    with open('${results}', 'r') as f:
         result = json.load(f)
 
-    with open('predicted.json', 'w') as f:
+    with open('results.json', 'w') as f:
         result["Anomaly_status"] = status
         result["Anomaly_score"] = anomaly_score
         result["Anomaly_thresholds"] = {"Medium-risk sample": 1.5, "High-risk sample": threshold}
@@ -319,13 +362,14 @@ workflow {
 
     data = parseRawData(wd)
     mynorm_normalized = normalizeData(data.mynorm, manifest)
-    mynorm_normalized_imputed = imputeData(mynorm_normalized, scaler, imputer)
+    (mynorm_normalized_imputed, results) = imputeData(mynorm_normalized, scaler, imputer, data.results)
+    plotNaNfreq(results)
 
-    predictions_model = predictData(mynorm_normalized_imputed, model, data.predictions)
-    generatePP(predictions_model)
+    results_model = predictData(mynorm_normalized_imputed, model, results)
+    generatePP(results_model)
 
-    predictions_anomaly_detector = anomalyDetection(mynorm_normalized_imputed, anomaly_detector, data.predictions)
-    generateAP(predictions_anomaly_detector)
+    results_anomaly_detector = anomalyDetection(mynorm_normalized_imputed, anomaly_detector, data.results)
+    generateAP(results_anomaly_detector)
 
     cnvs_plot = cnvsEstimation(wd)
     updateCNVsPlot(cnvs_plot)
