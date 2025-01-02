@@ -68,7 +68,8 @@ process imputeData {
 
     import pandas as pd
     import joblib
-
+    import json
+    
     data = pd.read_parquet("${normalized_mynorm}")
     if "CpG" in data.columns:
         data = data.set_index("CpG")
@@ -80,8 +81,11 @@ process imputeData {
     with open('${results}', 'r') as f:
         result = json.load(f)
 
+    nan_freq = data.isna().value_counts(normalize=True).to_dict()
+    nan_freq = {str(k[0]): v for k, v in nan_freq.items()}
+
     with open('results.json', 'w') as f:
-        result["NaN_frequency"] = data.isna().value_counts(normalize=True).to_dict()
+        result["NaN_frequency"] = nan_freq
         json.dump(result, f)
 
     if not data.isna().any().squeeze():
@@ -110,12 +114,13 @@ process plotNaNfreq {
     #!/usr/local/bin/python3.10
 
     import json
+    import pandas as pd
     import plotly.express as px
     from plotly.io import write_json
 
     with open('${results}', 'r') as f:
         result = json.load(f)
-        nan_freq = results["NaN_frequency"]
+        nan_freq = result["NaN_frequency"]
 
     df = pd.DataFrame.from_records(nan_freq, index=["NaN frequency"]).T.reset_index()
 
