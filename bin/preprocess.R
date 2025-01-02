@@ -23,7 +23,7 @@ sex <- inferSex(openSesame(sdfs))
 platform <- sesameData_check_platform(probes = sdfs$Probe_ID)
 options <- list("MALE" = "Male", "FEMALE" = "Female")
 
-write(toJSON(list("Predicted_sex" = options[[sex]], "Predicted_platform" = platform)), "predicted.json")
+write(toJSON(list("Predicted_sex" = options[[sex]], "Predicted_platform" = platform)), "results.json")
 
 message("Converting sdfs object")
 name <- names(searchIDATprefixes(file.path(data_path, "idats/")))
