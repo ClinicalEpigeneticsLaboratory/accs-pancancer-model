@@ -1,5 +1,5 @@
 ### Pancancer-model v1
-This is a Nextflow-based implementation of a predictive model compatible with the [MbCC](https://mbcc.pum.edu.pl/ model registry.
+This is a Nextflow-based implementation of a predictive model compatible with the [MbCC](https://mbcc.pum.edu.pl/) model registry.
 
 #### Run locally
 
@@ -58,8 +58,8 @@ The inference workflow includes the following five main steps:
 To be compatible with the MbCC model registry, Nextflow scripts must generate `results/` within `input` directory, MbCC expects
 that `results/` subdirectory comprises:
 1. pp.json - Probability plot
-2. ap.json - Anomaly plot generated
-3. nanf.json - Nan frequency plot generated 
+2. ap.json - Anomaly plot
+3. nanf.json - Nan frequency plot 
 4. cnvs.json - CNVs estimation plot generated using [conumee2.0](https://github.com/hovestadtlab/conumee2)
 5. results.json - JSON file comprising:
 
@@ -70,3 +70,5 @@ that `results/` subdirectory comprises:
    - `Classes` - <list> - List of all classes supported by the model (in the same order as `Probabilities`)
    - `Anomaly_score` - <float> - Numerical value indicating the likelihood of anomaly (novelty/outlier) 
    - `Anomaly_thresholds` - <dict> - Threshold values for anomaly scores e.g. {"Medium-risk sample": 1.5, "High-risk sample": 1.86}
+
+All plots should be generated using Plotly and exported to json using write_json from plotly.io.
