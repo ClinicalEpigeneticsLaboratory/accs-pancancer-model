@@ -1,6 +1,6 @@
 # Nextflow
 work/
-.nextflow
+.nextflow*
 .log
 
 # Byte-compiled / optimized / DLL files

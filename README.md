@@ -31,6 +31,11 @@ process {
 }
 ```
 
+#### Start
+```
+nextflow workflow.nf --input <dir> -work-dir /temp/work
+```
+
 #### Content
 Nextflow scripts compatible with the MbCC model registry must include:
 
@@ -71,4 +76,4 @@ that `results/` subdirectory comprises:
    - `Anomaly_score` - <float> - Numerical value indicating the likelihood of anomaly (novelty/outlier) 
    - `Anomaly_thresholds` - <dict> - Threshold values for anomaly scores e.g. {"Medium-risk sample": 1.5, "High-risk sample": 1.86}
 
-All plots should be generated using Plotly and exported to json using write_json from plotly.io.
+All plots should be generated using Plotly and exported to json using write_json from [plotly.io](https://plotly.com/python-api-reference/generated/plotly.io.html).
