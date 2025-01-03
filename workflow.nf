@@ -159,9 +159,11 @@ process predictData {
     confidence = max(proba)
     classes = model.classes_.tolist()
 
-    if confidence >= 0.8:
+    confidence_thresholds = {"High": 0.8, "Medium": 0.65, "Low": 0.5}
+
+    if confidence >= confidence_thresholds["High"]:
         confidence_status = "High"
-    elif 0.65 < confidence < 0.8:
+    elif confidence_thresholds["Medium"] < confidence < confidence_thresholds["High"]:
         confidence_status = "Medium"
     else:
         confidence_status = "Low"
@@ -173,6 +175,7 @@ process predictData {
         result["Prediction"] = prediction
         result["Confidence"] = round(confidence, 2)
         result["Confidence_status"] = confidence_status
+        result["Confidence_thresholds"] = confidence_thresholds
         result["Probabilities"] = proba
         result["Classes"] = classes
 
@@ -251,6 +254,7 @@ process generatePP {
     n_top = 10
     classes = predicted["Classes"]
     probabilities = predicted["Probabilities"]
+    thresholds = predicted["Confidence_thresholds"]
 
     df = pd.concat(
     (
@@ -265,7 +269,7 @@ process generatePP {
     fig = px.bar(data_frame=df, x="Probability", y="Class", orientation="h", title=f"Prediction probabilities [TOP{n_top}]")
     fig.update_layout(height=500, showlegend=False, xaxis={"range": (0, 1)}, yaxis={"categoryorder": "total ascending"})
 
-    for t, name in zip([0.5, 0.65, 0.8], ["Low", "Medium", "High"]):
+    for name, t in thresholds.items():
         fig.add_vline(
             x=t,
             line_color="red",
