@@ -72,6 +72,7 @@ that `results/` subdirectory comprises:
    - `Predicted_platform` - <str> - Predicted platform (450K, EPIC or EPICv2)
    - `Prediction` - <str> - Predicted class
    - `Probabilities` - <list> - List of all predicted probabilities 
+   - `Confidence_thresholds` - <dict> Threshold values for probabilities e.g. {"High": 0.8, "Medium": 0.65, "Low": 0.5}
    - `Classes` - <list> - List of all classes supported by the model (in the same order as `Probabilities`)
    - `Anomaly_score` - <float> - Numerical value indicating the likelihood of anomaly (novelty/outlier) 
    - `Anomaly_thresholds` - <dict> - Threshold values for anomaly scores e.g. {"Medium-risk sample": 1.5, "High-risk sample": 1.86}
