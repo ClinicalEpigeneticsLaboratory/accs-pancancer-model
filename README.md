@@ -51,7 +51,8 @@ By default, the workflow expects an 'idats/' subdirectory within the task direct
 
 
 #### Inference workflow
-The inference workflow includes the following five main steps:
+The inference workflow includes the following five main steps (they are not obligatory and different models
+registered within MbCC could differ in number of processing steps):
 1. Loading, normalizing, and masking probes from Idat files
 2. Imputing missing data
 3. Data engineering 
