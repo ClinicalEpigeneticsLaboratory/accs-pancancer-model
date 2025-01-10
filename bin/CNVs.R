@@ -2,12 +2,16 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args)==0) {
-  stop("At least one argument must be supplied")
+if (length(args) < 2) {
+  stop("Two arguments must be supplied")
 } else {
+
   data_path = args[1]
+  detail_regions = args[2]
+
 }
 
+library(GenomicRanges)
 library(htmltools)
 library(conumee2)
 library(sesame)
@@ -33,9 +37,20 @@ reference <- CNV.load(do.call(cbind, lapply(reference, totalIntensities)))
 sample <- CNV.load(totalIntensities(sdfs[[name]]), names=name)
 
 data(exclude_regions)
-data(detail_regions)
+detail_regions <- read.table(detail_regions, header = TRUE, sep = "\t")
+detail_regions <- GRanges(
+  seqnames = detail_regions$chr,
+  ranges = IRanges(start = detail_regions$start, end = detail_regions$end),
+  strand = detail_regions$strand,
+  name = detail_regions$name
+)
+  
+anno <- CNV.create_anno(array_type = c("450k", "EPIC", "EPICv2"), 
+                        exclude_regions = exclude_regions, 
+                        detail_regions = detail_regions,
+                        genome="hg19"
+                        )
 
-anno <- CNV.create_anno(array_type = c("450k", "EPIC", "EPICv2"), exclude_regions = exclude_regions, detail_regions = detail_regions)
 cnvs <- CNV.fit(query = sample, ref = reference, anno)
 cnvs <- CNV.bin(cnvs)
 cnvs <- CNV.detail(cnvs)

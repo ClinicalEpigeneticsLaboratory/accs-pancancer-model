@@ -6,7 +6,9 @@ params.model = "artifacts/model"
 params.imputer = "artifacts/imputer"
 params.scaler = "artifacts/scaler"
 params.manifest = "artifacts/manifest.parquet"
+params.detail_regions = "artifacts/regions.bed"
 params.anomaly_detector = "artifacts/anomaly_detector"
+
 
 log.info """\
 ==============
@@ -328,13 +330,14 @@ process generateAP {
 process cnvsEstimation {
     input:
     path input
+    path regions
 
     output:
     path 'cnvs.json'
 
     script:
     """
-    CNVs.R $input
+    CNVs.R $input $regions
     """
 }
 
@@ -368,11 +371,13 @@ workflow {
     scaler = file( params.scaler )
     imputer = file( params.imputer )
     manifest = file( params.manifest )
+    detail_regions = file( params.detail_regions )
     anomaly_detector = file( params.anomaly_detector )
 
     data = parseRawData(wd)
     mynorm_normalized = normalizeData(data.mynorm, manifest)
     (mynorm_normalized_imputed, results) = imputeData(mynorm_normalized, scaler, imputer, data.results)
+
     plotNaNfreq(results)
 
     results_model = predictData(mynorm_normalized_imputed, model, results)
@@ -381,6 +386,6 @@ workflow {
     results_anomaly_detector = anomalyDetection(mynorm_normalized_imputed, anomaly_detector, data.results)
     generateAP(results_anomaly_detector)
 
-    cnvs_plot = cnvsEstimation(wd)
+    cnvs_plot = cnvsEstimation(wd, detail_regions)
     updateCNVsPlot(cnvs_plot)
 }
