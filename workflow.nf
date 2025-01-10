@@ -376,8 +376,8 @@ workflow {
 
     data = parseRawData(wd)
     mynorm_normalized = normalizeData(data.mynorm, manifest)
-    (mynorm_normalized_imputed, results) = imputeData(mynorm_normalized, scaler, imputer, data.results)
 
+    (mynorm_normalized_imputed, results) = imputeData(mynorm_normalized, scaler, imputer, data.results)
     plotNaNfreq(results)
 
     results_model = predictData(mynorm_normalized_imputed, model, results)

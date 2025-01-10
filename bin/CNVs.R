@@ -2,7 +2,7 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
-if (length(args) < 2) {
+if (length(args)<2) {
   stop("Two arguments must be supplied")
 } else {
 
