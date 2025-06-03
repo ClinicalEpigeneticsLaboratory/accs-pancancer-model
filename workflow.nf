@@ -91,7 +91,7 @@ process imputeData {
         json.dump(result, f)
 
     if not data.isna().any().squeeze():
-        data.to_parquet('imputed.parquet')
+        data.T.to_parquet('imputed.parquet')
 
     else:
         data = data.T
